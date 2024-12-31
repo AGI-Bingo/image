@@ -27,6 +27,7 @@
   }
 generateTimeImage()
   
+ 
   async function generateTimeImage() {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -59,9 +60,33 @@ generateTimeImage()
     // Write referrer URL
     ctx.fillText(`Referrer: ${referrer}`, canvas.width / 2, (canvas.height / 5) * 3);
 
-    // Serve the image as a blob URL for proper embedding
-    const imgData = canvas.toDataURL("image/png");
-    document.body.innerHTML = `<img src="${imgData}" alt="Generated Image" />`;
+    // Convert canvas to Blob and return as image
+    canvas.toBlob((blob) => {
+      const blobURL = URL.createObjectURL(blob);
+      // Redirect the browser to the Blob URL to serve the image
+      if (isEmbeddedRequest()) {
+        serveImageBlob(blob);
+      } else {
+        location.href = blobURL;
+      }
+    }, "image/png");
+  }
+
+  // Detect if the request is from an embedded context
+  function isEmbeddedRequest() {
+    return location.pathname.endsWith(".png");
+  }
+
+  // Serve the image Blob directly in the response
+  function serveImageBlob(blob) {
+    const headers = new Headers();
+    headers.set("Content-Type", "image/png");
+    const fileReader = new FileReader();
+    fileReader.onloadend = () => {
+      const imgData = fileReader.result.split(",")[1]; // Base64 encoded data
+      document.write(`<img src="data:image/png;base64,${imgData}" alt="Generated Image"/>`);
+    };
+    fileReader.readAsDataURL(blob);
   }
 
   // Fetch IP address using a public API
