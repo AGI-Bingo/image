@@ -15,9 +15,7 @@
   };
 
   // Router logic
-  // const path = decodeURIComponent(location.pathname.slice(1)); // Extract path
   const path = decodeURIComponent(location.pathname.slice(2)); // Extract path
-
   const routeHandler = routes[path];
 
   if (routeHandler) {
@@ -27,18 +25,22 @@
     // Fallback for unknown routes
     document.body.innerHTML = "<h1>404 - Not Found</h1>";
   }
-  generateTimeImage()
-  
+
+  generateTimeImage();
+
   // Generate a "time.png" image
-  function generateTimeImage() {
+  async function generateTimeImage() {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     canvas.width = 800;
-    canvas.height = 200;
+    canvas.height = 400; // Increased height to accommodate more lines
 
     // Background
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Fetch IP address
+    const ip = await fetchIP();
 
     // Text
     const now = new Date();
@@ -46,11 +48,28 @@
     ctx.font = "40px Arial";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(now.toLocaleString(), canvas.width / 2, canvas.height / 2);
+
+    // Write current time
+    ctx.fillText(now.toLocaleString(), canvas.width / 2, canvas.height / 3);
+
+    // Write IP address
+    ctx.fillText(`IP: ${ip}`, canvas.width / 2, (canvas.height / 3) * 2);
 
     // Return the image as PNG
     const imgData = canvas.toDataURL("image/png");
     sendImageResponse(imgData);
+  }
+
+  // Fetch IP address using a public API
+  async function fetchIP() {
+    try {
+      const response = await fetch("https://api.ipify.org?format=json");
+      const data = await response.json();
+      return data.ip;
+    } catch (error) {
+      console.error("Error fetching IP address:", error);
+      return "Unknown IP";
+    }
   }
 
   // Helper: Respond with the generated image
