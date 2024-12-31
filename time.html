@@ -42,8 +42,13 @@
         // Create a Blob URL from the Blob
         const blobURL = URL.createObjectURL(blob);
 
-        // Redirect to the Blob URL to treat it as an image
-        window.location.href = blobURL;
+        // Expose the Blob URL for external usage (checker page can access this)
+        window.blobURL = blobURL;
+        // Optionally, display a link to the image for direct access
+        const link = document.createElement("a");
+        link.href = blobURL;
+        link.textContent = "Click here to view the generated image";
+        document.body.appendChild(link);
       }, "image/png"); // Specify PNG type
     };
 
