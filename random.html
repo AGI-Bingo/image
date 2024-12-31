@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Random Image Generator</title>
+</head>
+<body>
+    <canvas id="canvas" width="400" height="400" style="display: none;"></canvas>
+    <script>
+        function generateRandomColor() {
+            return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+        }
+
+        function createRandomImage() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const color = generateRandomColor();
+            
+            // Fill canvas with random color
+            ctx.fillStyle = color;
+            ctx.fillRect(0, 0, 400, 400);
+            
+            return {
+                dataUrl: canvas.toDataURL('image/png'),
+                color: color
+            };
+        }
+
+        // Check if the page is being loaded directly or embedded
+        if (document.referrer && document.referrer.includes('checker.html')) {
+            // If loaded from checker.html, send the color data via postMessage
+            const imageData = createRandomImage();
+            window.parent.postMessage({
+                type: 'randomImage',
+                color: imageData.color,
+                dataUrl: imageData.dataUrl
+            }, '*');
+        } else {
+            // If loaded directly, return the PNG image
+            const imageData = createRandomImage();
+            document.body.innerHTML = `<img src="${imageData.dataUrl}" alt="Random Color">`;
+        }
+    </script>
+</body>
+</html>
