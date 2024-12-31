@@ -26,14 +26,11 @@
     document.body.innerHTML = "<h1>404 - Not Found</h1>";
   }
 
-  generateTimeImage();
-
-  // Generate a "time.png" image
   async function generateTimeImage() {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     canvas.width = 800;
-    canvas.height = 400; // Increased height to accommodate more lines
+    canvas.height = 600; // Increased height for more text lines
 
     // Background
     ctx.fillStyle = "black";
@@ -42,22 +39,28 @@
     // Fetch IP address
     const ip = await fetchIP();
 
+    // Get the referrer (origin URL)
+    const referrer = document.referrer || "Direct Access";
+
     // Text
     const now = new Date();
     ctx.fillStyle = "purple";
-    ctx.font = "40px Arial";
+    ctx.font = "30px Arial";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
     // Write current time
-    ctx.fillText(now.toLocaleString(), canvas.width / 2, canvas.height / 3);
+    ctx.fillText(now.toLocaleString(), canvas.width / 2, canvas.height / 5);
 
     // Write IP address
-    ctx.fillText(`IP: ${ip}`, canvas.width / 2, (canvas.height / 3) * 2);
+    ctx.fillText(`IP: ${ip}`, canvas.width / 2, (canvas.height / 5) * 2);
 
-    // Return the image as PNG
+    // Write referrer URL
+    ctx.fillText(`Referrer: ${referrer}`, canvas.width / 2, (canvas.height / 5) * 3);
+
+    // Serve the image as a blob URL for proper embedding
     const imgData = canvas.toDataURL("image/png");
-    sendImageResponse(imgData);
+    document.body.innerHTML = `<img src="${imgData}" alt="Generated Image" />`;
   }
 
   // Fetch IP address using a public API
@@ -70,21 +73,6 @@
       console.error("Error fetching IP address:", error);
       return "Unknown IP";
     }
-  }
-
-  // Helper: Respond with the generated image
-  function sendImageResponse(imageDataURL) {
-    const binary = atob(imageDataURL.split(",")[1]);
-    const array = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-      array[i] = binary.charCodeAt(i);
-    }
-
-    const blob = new Blob([array], { type: "image/png" });
-    const url = URL.createObjectURL(blob);
-
-    // Redirect to the image blob to "simulate" returning an image
-    location.replace(url);
   }
 </script>
 </body>
