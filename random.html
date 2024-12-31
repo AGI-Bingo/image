@@ -2,46 +2,42 @@
 <html>
 <head>
     <title>Random Image Generator</title>
+</head>
+<body>
+    <canvas id="canvas" width="400" height="400"></canvas>
     <script>
         function generateRandomColor() {
             return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
         }
 
         function createRandomImage() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 400;
-            canvas.height = 400;
+            const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
             const color = generateRandomColor();
             
+            // Fill canvas with random color
             ctx.fillStyle = color;
             ctx.fillRect(0, 0, 400, 400);
             
             return {
-                dataUrl: canvas.toDataURL('image/png'),
-                color: color
+                color: color,
+                canvas: canvas
             };
         }
 
-        // Execute immediately when script loads
-        (function() {
-            if (document.referrer && document.referrer.includes('checker.html')) {
-                // If loaded from checker.html, send the color data via postMessage
-                const imageData = createRandomImage();
-                window.parent.postMessage({
-                    type: 'randomImage',
-                    color: imageData.color,
-                    dataUrl: imageData.dataUrl
-                }, '*');
-            } else {
-                // If loaded directly, redirect to the PNG data URL
-                const imageData = createRandomImage();
-                window.location.href = imageData.dataUrl;
-            }
-        })();
+        // Check if the page is being accessed directly or via AJAX
+        const imageData = createRandomImage();
+        
+        if (document.contentType === 'text/html') {
+            // Convert canvas to blob and serve as image
+            imageData.canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                window.location.replace(url);
+            }, 'image/png');
+        }
+
+        // Store the color in localStorage for the checker to access
+        localStorage.setItem('lastGeneratedColor', imageData.color);
     </script>
-</head>
-<body>
-    <!-- Empty body - page will redirect immediately -->
 </body>
 </html>
