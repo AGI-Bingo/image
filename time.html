@@ -3,101 +3,81 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dynamic Router</title>
+  <title>Dynamic Time Image</title>
+  <script>
+    // Immediately generate the image once the page is accessed
+    window.onload = async function() {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      canvas.width = 800;
+      canvas.height = 600; // Increased height for more text lines
+
+      // Background
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Fetch IP address
+      const ip = await fetchIP();
+
+      // Get the referrer (origin URL)
+      const referrer = document.referrer || "Direct Access";
+
+      // Text
+      const now = new Date();
+      ctx.fillStyle = "purple";
+      ctx.font = "30px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      // Write current time
+      ctx.fillText(now.toLocaleString(), canvas.width / 2, canvas.height / 5);
+
+      // Write IP address
+      ctx.fillText(`IP: ${ip}`, canvas.width / 2, (canvas.height / 5) * 2);
+
+      // Write referrer URL
+      ctx.fillText(`Referrer: ${referrer}`, canvas.width / 2, (canvas.height / 5) * 3);
+
+      // Convert canvas to Base64
+      const base64Image = canvas.toDataURL("image/png");
+
+      // Serve the image data directly
+      serveImage(base64Image);
+    };
+
+    // Serve the generated image
+    function serveImage(base64Image) {
+      const base64Data = base64Image.split(",")[1]; // Extract only the Base64 part
+
+      // Convert Base64 to binary data
+      const binaryData = atob(base64Data);
+      const length = binaryData.length;
+      const arrayBuffer = new Uint8Array(length);
+      for (let i = 0; i < length; i++) {
+        arrayBuffer[i] = binaryData.charCodeAt(i);
+      }
+
+      // Create a Blob and serve it as the image response
+      const blob = new Blob([arrayBuffer], { type: "image/png" });
+      const blobURL = URL.createObjectURL(blob);
+
+      // Replace the page content with the image
+      window.location.replace(blobURL);
+    }
+
+    // Fetch IP address using a public API
+    async function fetchIP() {
+      try {
+        const response = await fetch("https://api.ipify.org?format=json");
+        const data = await response.json();
+        return data.ip;
+      } catch (error) {
+        console.error("Error fetching IP address:", error);
+        return "Unknown IP";
+      }
+    }
+  </script>
 </head>
 <body>
-<script>
-  // Route handlers dictionary
-  const routes = {
-    "time.png": generateTimeImage,
-    "time": generateTimeImage,
-    // Add more routes here, e.g., "example.png": generateExampleImage
-  };
-
-  // Router logic
-  const path = decodeURIComponent(location.pathname.slice(2)); // Extract path
-  const routeHandler = routes[path];
-
-  if (routeHandler) {
-    // If the route exists, call the handler
-    routeHandler();
-  } else {
-    // Fallback for unknown routes
-    document.body.innerHTML = "<h1>404 - Not Found</h1>";
-  }
-generateTimeImage()
-  async function generateTimeImage() {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    canvas.width = 800;
-    canvas.height = 600; // Increased height for more text lines
-
-    // Background
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Fetch IP address
-    const ip = await fetchIP();
-
-    // Get the referrer (origin URL)
-    const referrer = document.referrer || "Direct Access";
-
-    // Text
-    const now = new Date();
-    ctx.fillStyle = "purple";
-    ctx.font = "30px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
-    // Write current time
-    ctx.fillText(now.toLocaleString(), canvas.width / 2, canvas.height / 5);
-
-    // Write IP address
-    ctx.fillText(`IP: ${ip}`, canvas.width / 2, (canvas.height / 5) * 2);
-
-    // Write referrer URL
-    ctx.fillText(`Referrer: ${referrer}`, canvas.width / 2, (canvas.height / 5) * 3);
-
-    // Convert canvas to Base64
-    const base64Image = canvas.toDataURL("image/png");
-
-    // Serve the image data directly
-    serveImage(base64Image);
-  }
-
-  // Serve image data directly
-  function serveImage(base64Image) {
-    const headers = new Headers();
-    headers.set("Content-Type", "image/png");
-    const base64Data = base64Image.split(",")[1]; // Extract only the Base64 part
-
-    // Respond with the raw PNG data encoded in Base64
-    const binaryData = atob(base64Data);
-    const length = binaryData.length;
-    const arrayBuffer = new Uint8Array(length);
-    for (let i = 0; i < length; i++) {
-      arrayBuffer[i] = binaryData.charCodeAt(i);
-    }
-
-    // Create a Blob and navigate directly to it
-    const blob = new Blob([arrayBuffer], { type: "image/png" });
-    const blobURL = URL.createObjectURL(blob);
-
-    // Force direct download or render (depending on the user agent)
-    location.href = blobURL;
-  }
-
-  // Fetch IP address using a public API
-  async function fetchIP() {
-    try {
-      const response = await fetch("https://api.ipify.org?format=json");
-      const data = await response.json();
-      return data.ip;
-    } catch (error) {
-      console.error("Error fetching IP address:", error);
-      return "Unknown IP";
-    }
-  }
-</script>
 </body>
 </html>
