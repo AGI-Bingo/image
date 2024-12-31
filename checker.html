@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Checker</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+        }
+        .image-frame {
+            border: 2px solid #ccc;
+            padding: 10px;
+        }
+        .color-info {
+            font-family: monospace;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="image-frame">
+            <iframe 
+                id="imageFrame"
+                src="random.html" 
+                width="400" 
+                height="400" 
+                style="border: none;"
+            ></iframe>
+        </div>
+        <div class="color-info" id="colorDisplay">Waiting for color...</div>
+        <button onclick="refreshImage()">Generate New Color</button>
+    </div>
+
+    <script>
+        function refreshImage() {
+            document.getElementById('imageFrame').src = 'random.html?' + Date.now();
+        }
+
+        // Listen for the color data from the random.html page
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'randomImage') {
+                const imageFrame = document.getElementById('imageFrame');
+                imageFrame.style.width = '400px';
+                imageFrame.style.height = '400px';
+                
+                // Update the iframe content with the new image
+                const iframeDoc = imageFrame.contentWindow.document;
+                iframeDoc.body.innerHTML = `<img src="${event.data.dataUrl}" alt="Random Color" style="width: 100%; height: 100%;">`;
+                
+                // Display the color code
+                document.getElementById('colorDisplay').textContent = `Current Color: ${event.data.color}`;
+            }
+        });
+    </script>
+</body>
+</html>
