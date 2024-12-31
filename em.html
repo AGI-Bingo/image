@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Checker</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+        }
+        .image-container {
+            border: 2px solid #ccc;
+            padding: 10px;
+        }
+        .color-info {
+            font-family: monospace;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="image-container">
+            <img id="randomImage" width="400" height="400" alt="Random Color">
+        </div>
+        <div class="color-info" id="colorDisplay">Waiting for color...</div>
+        <button onclick="refreshImage()">Generate New Color</button>
+    </div>
+
+    <script>
+        function refreshImage() {
+            const timestamp = Date.now();
+            const img = document.getElementById('randomImage');
+            img.src = `random.html?t=${timestamp}`;
+            
+            // Small delay to allow the random.html page to generate and store the new color
+            setTimeout(() => {
+                const color = localStorage.getItem('lastGeneratedColor');
+                document.getElementById('colorDisplay').textContent = `Current Color: ${color}`;
+            }, 100);
+        }
+
+        // Initial load
+        refreshImage();
+    </script>
+</body>
+</html>
