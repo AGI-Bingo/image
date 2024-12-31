@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Router</title>
+</head>
+<body>
+<script>
+  // Route handlers dictionary
+  const routes = {
+    "time.png": generateTimeImage,
+    // Add more routes here, e.g., "example.png": generateExampleImage
+  };
+
+  // Router logic
+  const path = decodeURIComponent(location.pathname.slice(1)); // Extract path
+  const routeHandler = routes[path];
+
+  if (routeHandler) {
+    // If the route exists, call the handler
+    routeHandler();
+  } else {
+    // Fallback for unknown routes
+    document.body.innerHTML = "<h1>404 - Not Found</h1>";
+  }
+
+  // Generate a "time.png" image
+  function generateTimeImage() {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = 800;
+    canvas.height = 200;
+
+    // Background
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Text
+    const now = new Date();
+    ctx.fillStyle = "purple";
+    ctx.font = "40px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(now.toLocaleString(), canvas.width / 2, canvas.height / 2);
+
+    // Return the image as PNG
+    const imgData = canvas.toDataURL("image/png");
+    sendImageResponse(imgData);
+  }
+
+  // Helper: Respond with the generated image
+  function sendImageResponse(imageDataURL) {
+    const binary = atob(imageDataURL.split(",")[1]);
+    const array = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      array[i] = binary.charCodeAt(i);
+    }
+
+    const blob = new Blob([array], { type: "image/png" });
+    const url = URL.createObjectURL(blob);
+
+    // Redirect to the image blob to "simulate" returning an image
+    location.replace(url);
+  }
+</script>
+</body>
+</html>
