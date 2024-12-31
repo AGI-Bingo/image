@@ -4,9 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Check Image</title>
+  <script>
+    window.onload = function() {
+      // Wait for the Blob URL to be generated on the other page
+      const waitForImage = setInterval(function() {
+        // Check if the Blob URL is available
+        if (window.blobURL) {
+          // Update the image source with the Blob URL
+          const img = document.getElementById("generated-image");
+          img.src = window.blobURL;
+
+          // Clear the interval once the image is updated
+          clearInterval(waitForImage);
+        }
+      }, 100); // Check every 100ms if the Blob URL is available
+    };
+  </script>
 </head>
 <body>
   <h1>Test Page: Check Referrer Information</h1>
+  <p>
+    <a href="https://agi-bingo.github.io/image/time">View Generated Image</a>
+  </p>
+  <p>
+    <img id="generated-image" src="" alt="Generated Image" />
+  </p>
+
+  <h1>OLD Test Page: Check Referrer Information</h1>
   <p>
     <a href="https://agi-bingo.github.io/image/time">View Generated Image</a>
   </p>
