@@ -26,8 +26,6 @@
     document.body.innerHTML = "<h1>404 - Not Found</h1>";
   }
 generateTimeImage()
-  
- 
   async function generateTimeImage() {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -60,33 +58,33 @@ generateTimeImage()
     // Write referrer URL
     ctx.fillText(`Referrer: ${referrer}`, canvas.width / 2, (canvas.height / 5) * 3);
 
-    // Convert canvas to Blob and return as image
-    canvas.toBlob((blob) => {
-      const blobURL = URL.createObjectURL(blob);
-      // Redirect the browser to the Blob URL to serve the image
-      if (isEmbeddedRequest()) {
-        serveImageBlob(blob);
-      } else {
-        location.href = blobURL;
-      }
-    }, "image/png");
+    // Convert canvas to Base64
+    const base64Image = canvas.toDataURL("image/png");
+
+    // Serve the image data directly
+    serveImage(base64Image);
   }
 
-  // Detect if the request is from an embedded context
-  function isEmbeddedRequest() {
-    return location.pathname.endsWith(".png");
-  }
-
-  // Serve the image Blob directly in the response
-  function serveImageBlob(blob) {
+  // Serve image data directly
+  function serveImage(base64Image) {
     const headers = new Headers();
     headers.set("Content-Type", "image/png");
-    const fileReader = new FileReader();
-    fileReader.onloadend = () => {
-      const imgData = fileReader.result.split(",")[1]; // Base64 encoded data
-      document.write(`<img src="data:image/png;base64,${imgData}" alt="Generated Image"/>`);
-    };
-    fileReader.readAsDataURL(blob);
+    const base64Data = base64Image.split(",")[1]; // Extract only the Base64 part
+
+    // Respond with the raw PNG data encoded in Base64
+    const binaryData = atob(base64Data);
+    const length = binaryData.length;
+    const arrayBuffer = new Uint8Array(length);
+    for (let i = 0; i < length; i++) {
+      arrayBuffer[i] = binaryData.charCodeAt(i);
+    }
+
+    // Create a Blob and navigate directly to it
+    const blob = new Blob([arrayBuffer], { type: "image/png" });
+    const blobURL = URL.createObjectURL(blob);
+
+    // Force direct download or render (depending on the user agent)
+    location.href = blobURL;
   }
 
   // Fetch IP address using a public API
