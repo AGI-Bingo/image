@@ -14,7 +14,9 @@
   };
 
   // Router logic
-  const path = decodeURIComponent(location.pathname.slice(1)); // Extract path
+  // const path = decodeURIComponent(location.pathname.slice(1)); // Extract path
+  const path = decodeURIComponent(location.pathname.slice(2)); // Extract path
+
   const routeHandler = routes[path];
 
   if (routeHandler) {
