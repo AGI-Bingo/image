@@ -5,33 +5,52 @@ document.addEventListener('DOMContentLoaded', function() {
     // Create hidden iframe
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
-    iframe.src = img.src;
     document.body.appendChild(iframe);
 
-    // Listen for the blob URL from the iframe
-    window.addEventListener('message', async function(event) {
-        if (event.data.type === 'blobUrl') {
-            // Fetch the blob URL and convert to base64
-            const response = await fetch(event.data.url);
-            const blob = await response.blob();
-            
-            const reader = new FileReader();
-            reader.onloadend = function() {
-                // Update image source with base64 data
-                img.src = reader.result;
-                
-                // Clean up
-                URL.revokeObjectURL(event.data.url);
-                iframe.remove();
-                
-                // Display color info if needed
-                const color = localStorage.getItem('lastGeneratedColor');
-                if (color) {
-                    console.log('Generated color:', color);
-                    // You can display this color somewhere if needed
+    // Handle iframe load
+    iframe.onload = function() {
+        // Try to get the image from iframe
+        const iframeDoc = iframe.contentWindow.document;
+        const iframeImg = iframeDoc.querySelector('img');
+        
+        if (iframeImg) {
+            // If we found an image in the iframe, use its src directly
+            img.src = iframeImg.src;
+            iframe.remove();
+        } else {
+            // If no image found yet, wait for postMessage
+            window.addEventListener('message', async function messageHandler(event) {
+                if (event.data.type === 'blobUrl') {
+                    // Fetch the blob URL
+                    try {
+                        const response = await fetch(event.data.url);
+                        const blob = await response.blob();
+                        
+                        const reader = new FileReader();
+                        reader.onloadend = function() {
+                            // Update main image with base64 data
+                            img.src = reader.result;
+                            
+                            // Clean up
+                            URL.revokeObjectURL(event.data.url);
+                            iframe.remove();
+                            window.removeEventListener('message', messageHandler);
+                            
+                            // Display color info if needed
+                            const color = localStorage.getItem('lastGeneratedColor');
+                            if (color) {
+                                console.log('Generated color:', color);
+                            }
+                        };
+                        reader.readAsDataURL(blob);
+                    } catch (error) {
+                        console.error('Error processing image:', error);
+                    }
                 }
-            };
-            reader.readAsDataURL(blob);
+            });
         }
-    });
+    };
+
+    // Start loading the random.html in the iframe
+    iframe.src = img.src;
 });
