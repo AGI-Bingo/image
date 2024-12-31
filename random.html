@@ -2,20 +2,18 @@
 <html>
 <head>
     <title>Random Image Generator</title>
-</head>
-<body>
-    <canvas id="canvas" width="400" height="400" style="display: none;"></canvas>
     <script>
         function generateRandomColor() {
             return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
         }
 
         function createRandomImage() {
-            const canvas = document.getElementById('canvas');
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 400;
             const ctx = canvas.getContext('2d');
             const color = generateRandomColor();
             
-            // Fill canvas with random color
             ctx.fillStyle = color;
             ctx.fillRect(0, 0, 400, 400);
             
@@ -25,20 +23,25 @@
             };
         }
 
-        // Check if the page is being loaded directly or embedded
-        if (document.referrer && document.referrer.includes('checker.html')) {
-            // If loaded from checker.html, send the color data via postMessage
-            const imageData = createRandomImage();
-            window.parent.postMessage({
-                type: 'randomImage',
-                color: imageData.color,
-                dataUrl: imageData.dataUrl
-            }, '*');
-        } else {
-            // If loaded directly, return the PNG image
-            const imageData = createRandomImage();
-            document.body.innerHTML = `<img src="${imageData.dataUrl}" alt="Random Color">`;
-        }
+        // Execute immediately when script loads
+        (function() {
+            if (document.referrer && document.referrer.includes('checker.html')) {
+                // If loaded from checker.html, send the color data via postMessage
+                const imageData = createRandomImage();
+                window.parent.postMessage({
+                    type: 'randomImage',
+                    color: imageData.color,
+                    dataUrl: imageData.dataUrl
+                }, '*');
+            } else {
+                // If loaded directly, redirect to the PNG data URL
+                const imageData = createRandomImage();
+                window.location.href = imageData.dataUrl;
+            }
+        })();
     </script>
+</head>
+<body>
+    <!-- Empty body - page will redirect immediately -->
 </body>
 </html>
